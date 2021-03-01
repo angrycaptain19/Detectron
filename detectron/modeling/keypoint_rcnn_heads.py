@@ -65,11 +65,7 @@ def add_keypoint_outputs(model, blob_in, dim):
         model.Relu('kps_deconv', 'kps_deconv')
         dim = cfg.KRCNN.DECONV_DIM
 
-    if upsample_heatmap:
-        blob_name = 'kps_score_lowres'
-    else:
-        blob_name = 'kps_score'
-
+    blob_name = 'kps_score_lowres' if upsample_heatmap else 'kps_score'
     if cfg.KRCNN.USE_DECONV_OUTPUT:
         # Use ConvTranspose to predict heatmaps; results in 2x upsampling
         blob_out = model.ConvTranspose(

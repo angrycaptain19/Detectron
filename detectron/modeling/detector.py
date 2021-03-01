@@ -158,7 +158,7 @@ class DetectionModelHelper(cnn.CNNModelHelper):
                 min_size=rpn_min_size,
             )
         else:
-            name = 'GenerateProposalsOp:' + ','.join([str(b) for b in blobs_in])
+            name = 'GenerateProposalsOp:' + ','.join(str(b) for b in blobs_in)
             # spatial_scale passed to the Python op is only used in
             # convert_pkl_to_pb
             self.net.Python(
@@ -182,9 +182,7 @@ class DetectionModelHelper(cnn.CNNModelHelper):
             training the model. It does this by querying the data loader for
             the list of blobs that are needed.
         """
-        name = 'GenerateProposalLabelsOp:' + ','.join(
-            [str(b) for b in blobs_in]
-        )
+        name = ('GenerateProposalLabelsOp:' + ','.join(str(b) for b in blobs_in))
 
         # The list of blobs is not known before run-time because it depends on
         # the specific model being trained. Query the data loader to get the
@@ -240,8 +238,9 @@ class DetectionModelHelper(cnn.CNNModelHelper):
             blobs_in += ['roidb', 'im_info']
         blobs_in = [core.ScopedBlobReference(b) for b in blobs_in]
         name = 'CollectAndDistributeFpnRpnProposalsOp:' + ','.join(
-            [str(b) for b in blobs_in]
+            str(b) for b in blobs_in
         )
+
 
         # Prepare output blobs
         blobs_out = fast_rcnn_roi_data.get_fast_rcnn_blob_names(
@@ -249,11 +248,9 @@ class DetectionModelHelper(cnn.CNNModelHelper):
         )
         blobs_out = [core.ScopedBlobReference(b) for b in blobs_out]
 
-        outputs = self.net.Python(
+        return self.net.Python(
             CollectAndDistributeFpnRpnProposalsOp(self.train).forward
         )(blobs_in, blobs_out, name=name)
-
-        return outputs
 
     def DropoutIfTraining(self, blob_in, dropout_rate):
         """Add dropout to blob_in if the model is in training mode and
@@ -343,9 +340,7 @@ class DetectionModelHelper(cnn.CNNModelHelper):
     ):
         """Add conv op that shares weights and/or biases with another conv op.
         """
-        use_bias = (
-            False if ('no_bias' in kwargs and kwargs['no_bias']) else True
-        )
+        use_bias = 'no_bias' not in kwargs or not kwargs['no_bias']
 
         if self.use_cudnn:
             kwargs['engine'] = 'CUDNN'
@@ -353,11 +348,7 @@ class DetectionModelHelper(cnn.CNNModelHelper):
             if self.ws_nbytes_limit:
                 kwargs['ws_nbytes_limit'] = self.ws_nbytes_limit
 
-        if use_bias:
-            blobs_in = [blob_in, weight, bias]
-        else:
-            blobs_in = [blob_in, weight]
-
+        blobs_in = [blob_in, weight, bias] if use_bias else [blob_in, weight]
         if 'no_bias' in kwargs:
             del kwargs['no_bias']
 
@@ -380,10 +371,7 @@ class DetectionModelHelper(cnn.CNNModelHelper):
 
         def upsample_filt(size):
             factor = (size + 1) // 2
-            if size % 2 == 1:
-                center = factor - 1
-            else:
-                center = factor - 0.5
+            center = factor - 1 if size % 2 == 1 else factor - 0.5
             og = np.ogrid[:size, :size]
             return ((1 - abs(og[0] - center) / factor) *
                     (1 - abs(og[1] - center) / factor))
@@ -436,10 +424,9 @@ class DetectionModelHelper(cnn.CNNModelHelper):
             bias_init=bias_init,
             no_bias=1
         )
-        blob_out = self.AffineChannel(
+        return self.AffineChannel(
             conv_blob, prefix + suffix, dim=dim_out, inplace=inplace
         )
-        return blob_out
 
     def ConvGN(  # args in the same order of Conv()
         self, blob_in, prefix, dim_in, dim_out, kernel, stride, pad,
@@ -566,7 +553,6 @@ class DetectionModelHelper(cnn.CNNModelHelper):
 
 def _get_lr_change_ratio(cur_lr, new_lr):
     eps = 1e-10
-    ratio = np.max(
+    return np.max(
         (new_lr / np.max((cur_lr, eps)), cur_lr / np.max((new_lr, eps)))
     )
-    return ratio

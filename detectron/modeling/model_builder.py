@@ -217,14 +217,14 @@ def build_generic_detection_model(
                 spatial_scale_conv
             )
 
-        if model.train:
-            loss_gradients = {}
-            for lg in head_loss_gradients.values():
-                if lg is not None:
-                    loss_gradients.update(lg)
-            return loss_gradients
-        else:
+        if not model.train:
             return None
+
+        loss_gradients = {}
+        for lg in head_loss_gradients.values():
+            if lg is not None:
+                loss_gradients.update(lg)
+        return loss_gradients
 
     optim.build_data_parallel_model(model, _single_gpu_build_func)
     return model
@@ -255,10 +255,9 @@ def _add_fast_rcnn_head(
     )
     fast_rcnn_heads.add_fast_rcnn_outputs(model, blob_frcn, dim_frcn)
     if model.train:
-        loss_gradients = fast_rcnn_heads.add_fast_rcnn_losses(model)
+        return fast_rcnn_heads.add_fast_rcnn_losses(model)
     else:
-        loss_gradients = None
-    return loss_gradients
+        return None
 
 
 def _add_roi_mask_head(

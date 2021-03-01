@@ -34,30 +34,24 @@ def get_retinanet_bias_init(model):
     details.
     """
     prior_prob = cfg.RETINANET.PRIOR_PROB
-    scales_per_octave = cfg.RETINANET.SCALES_PER_OCTAVE
-    aspect_ratios = len(cfg.RETINANET.ASPECT_RATIOS)
-    if cfg.RETINANET.SOFTMAX:
-        # Multiclass softmax case
-        bias = np.zeros((model.num_classes, 1), dtype=np.float32)
-        bias[0] = np.log(
-            (model.num_classes - 1) * (1 - prior_prob) / (prior_prob)
-        )
-        bias = np.vstack(
-            [bias for _ in range(scales_per_octave * aspect_ratios)]
-        )
-        bias_init = (
-            'GivenTensorFill', {
-                'values': bias.astype(dtype=np.float32)
-            }
-        )
-    else:
+    if not cfg.RETINANET.SOFTMAX:
         # Per-class sigmoid (binary classification) case
-        bias_init = (
-            'ConstantFill', {
+        return 'ConstantFill', {
                 'value': -np.log((1 - prior_prob) / prior_prob)
             }
-        )
-    return bias_init
+    # Multiclass softmax case
+    bias = np.zeros((model.num_classes, 1), dtype=np.float32)
+    bias[0] = np.log(
+        (model.num_classes - 1) * (1 - prior_prob) / (prior_prob)
+    )
+    aspect_ratios = len(cfg.RETINANET.ASPECT_RATIOS)
+    scales_per_octave = cfg.RETINANET.SCALES_PER_OCTAVE
+    bias = np.vstack(
+        [bias for _ in range(scales_per_octave * aspect_ratios)]
+    )
+    return 'GivenTensorFill', {
+                'values': bias.astype(dtype=np.float32)
+            }
 
 
 def add_fpn_retinanet_outputs(model, blobs_in, dim_in, spatial_scales):
@@ -289,8 +283,6 @@ def add_fpn_retinanet_losses(model):
                 scale=model.GetLossScale(),
                 num_classes=model.num_classes - 1
             )
-            gradients.append(cls_focal_loss)
-            losses.append('fl_{}'.format(suffix))
         else:
             cls_focal_loss, gated_prob = model.net.SoftmaxFocalLoss(
                 [
@@ -303,9 +295,8 @@ def add_fpn_retinanet_losses(model):
                 scale=model.GetLossScale(),
                 num_classes=model.num_classes
             )
-            gradients.append(cls_focal_loss)
-            losses.append('fl_{}'.format(suffix))
-
+        gradients.append(cls_focal_loss)
+        losses.append('fl_{}'.format(suffix))
     loss_gradients.update(blob_utils.get_loss_gradients(model, gradients))
     model.AddLosses(losses)
     return loss_gradients

@@ -337,8 +337,6 @@ def evaluate_box_proposals(
         for i, t in enumerate(thresholds):
             recalls[i] = (gt_overlaps >= t).sum() / float(num_pos)
         ar = recalls.mean()
-        return {'ar': ar, 'recalls': recalls, 'thresholds': thresholds,
-                'gt_overlaps': gt_overlaps, 'num_pos': num_pos}
     else:
         gt_classes_unique = np.unique(gt_classes)
         recalls = np.zeros((gt_classes_unique.shape[0], thresholds.shape[0]))
@@ -351,8 +349,9 @@ def evaluate_box_proposals(
                     gt_overlaps[inds] >= thresh
                 ).sum() / num_pos_per_category
         ar = recalls.mean(axis=1).mean()
-        return {'ar': ar, 'recalls': recalls, 'thresholds': thresholds,
-                'gt_overlaps': gt_overlaps, 'num_pos': num_pos}
+
+    return {'ar': ar, 'recalls': recalls, 'thresholds': thresholds,
+            'gt_overlaps': gt_overlaps, 'num_pos': num_pos}
 
 def evaluate_keypoints(
     json_dataset,
@@ -414,14 +413,14 @@ def _coco_kp_results_one_category(json_dataset, boxes, kps, cat_id):
     assert len(kps) == len(image_ids)
     assert len(boxes) == len(image_ids)
     use_box_score = False
-    if cfg.KRCNN.KEYPOINT_CONFIDENCE == 'logit':
+    if cfg.KRCNN.KEYPOINT_CONFIDENCE == 'bbox':
+        use_box_score = True
+    elif cfg.KRCNN.KEYPOINT_CONFIDENCE == 'logit':
         # This is ugly; see utils.keypoints.heatmap_to_keypoints for the magic
         # indexes
         score_index = 2
     elif cfg.KRCNN.KEYPOINT_CONFIDENCE == 'prob':
         score_index = 3
-    elif cfg.KRCNN.KEYPOINT_CONFIDENCE == 'bbox':
-        use_box_score = True
     else:
         raise ValueError(
             'KRCNN.KEYPOINT_CONFIDENCE must be "logit", "prob", or "bbox"')

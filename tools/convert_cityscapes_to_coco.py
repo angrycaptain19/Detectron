@@ -67,7 +67,7 @@ def convert_coco_stuff_mat(data_dir, out_dir):
                     data_dir, 'annotations/%s.mat' % img_name)
                 data = h5py.File(mat_file, 'r')
                 labelMap = data.get('S')
-                if len(categories) == 0:
+                if not categories:
                     labelNames = data.get('names')
                     for idx, n in enumerate(labelNames):
                         categories.append(
@@ -148,8 +148,7 @@ def convert_cityscapes_instance_only(
                         print("Processed %s images, %s annotations" % (
                             len(images), len(annotations)))
                     json_ann = json.load(open(os.path.join(root, filename)))
-                    image = {}
-                    image['id'] = img_id
+                    image = {'id': img_id}
                     img_id += 1
 
                     image['width'] = json_ann['imgWidth']
@@ -179,8 +178,7 @@ def convert_cityscapes_instance_only(
                                 print('Warning: invalid contours.')
                                 continue  # skip non-instance categories
 
-                            ann = {}
-                            ann['id'] = ann_id
+                            ann = {'id': ann_id}
                             ann_id += 1
                             ann['image_id'] = image['id']
                             ann['segmentation'] = obj['contours']

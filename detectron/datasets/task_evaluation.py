@@ -171,7 +171,7 @@ def log_box_proposal_results(results):
     """Log bounding box proposal results."""
     for dataset in results.keys():
         keys = results[dataset]['box_proposal'].keys()
-        pad = max([len(k) for k in keys])
+        pad = max(len(k) for k in keys)
         logger.info(dataset)
         for k, v in results[dataset]['box_proposal'].items():
             logger.info('{}: {:.3f}'.format(k.ljust(pad), v))

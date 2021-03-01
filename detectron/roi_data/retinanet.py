@@ -241,6 +241,8 @@ def _get_retinanet_blobs(
     # Split the generated labels, etc. into labels per each field of anchors
     blobs_out = []
     start_idx = 0
+    # data for select_smooth_l1 loss
+    num_classes = cfg.MODEL.NUM_CLASSES - 1
     for foa in foas:
         H = foa.field_size
         W = foa.field_size
@@ -257,8 +259,6 @@ def _get_retinanet_blobs(
         w = int(im_width / stride)
         h = int(im_height / stride)
 
-        # data for select_smooth_l1 loss
-        num_classes = cfg.MODEL.NUM_CLASSES - 1
         inds_4d = np.where(_labels > 0)
         M = len(inds_4d)
         _roi_bbox_targets = np.zeros((0, 4))

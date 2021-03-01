@@ -113,7 +113,6 @@ class GenerateProposalsOp(object):
         # Get mode-dependent configuration
         cfg_key = 'TRAIN' if self._train else 'TEST'
         pre_nms_topN = cfg[cfg_key].RPN_PRE_NMS_TOP_N
-        post_nms_topN = cfg[cfg_key].RPN_POST_NMS_TOP_N
         nms_thresh = cfg[cfg_key].RPN_NMS_THRESH
         min_size = cfg[cfg_key].RPN_MIN_SIZE
         # Transpose and reshape predicted bbox transformations to get them
@@ -164,6 +163,7 @@ class GenerateProposalsOp(object):
         # 8. return the top proposals (-> RoIs top)
         if nms_thresh > 0:
             keep = box_utils.nms(np.hstack((proposals, scores)), nms_thresh)
+            post_nms_topN = cfg[cfg_key].RPN_POST_NMS_TOP_N
             if post_nms_topN > 0:
                 keep = keep[:post_nms_topN]
             proposals = proposals[keep, :]
@@ -188,10 +188,9 @@ def _filter_boxes(boxes, min_size, im_info):
     hs = boxes[:, 3] - boxes[:, 1] + 1
     x_ctr = boxes[:, 0] + ws / 2.
     y_ctr = boxes[:, 1] + hs / 2.
-    keep = np.where(
+    return np.where(
         (ws_orig_scale >= min_size)
         & (hs_orig_scale >= min_size)
         & (x_ctr < im_info[1])
         & (y_ctr < im_info[0])
     )[0]
-    return keep

@@ -70,8 +70,9 @@ def process_in_parallel(
             start=int(start),
             end=int(end),
             cfg_file=shlex_quote(cfg_file),
-            opts=' '.join([shlex_quote(opt) for opt in opts])
+            opts=' '.join(shlex_quote(opt) for opt in opts),
         )
+
         logger.info('{} range command {}: {}'.format(tag, i, cmd))
         if i == 0:
             subprocess_stdout = subprocess.PIPE
