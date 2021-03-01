@@ -170,7 +170,7 @@ def convert_collect_and_distribute(
     ), "Not valid CollectAndDistributeFpnRpnProposalsOp"
 
     inputs = [x for x in op.input]
-    ret = core.CreateOperator(
+    return core.CreateOperator(
         "CollectAndDistributeFpnRpnProposals",
         inputs,
         list(op.output),
@@ -182,7 +182,6 @@ def convert_collect_and_distribute(
         rpn_min_level=rpn_min_level,
         rpn_post_nms_topN=rpn_post_nms_topN,
     )
-    return ret
 
 
 def convert_gen_proposals(
@@ -222,12 +221,11 @@ def convert_gen_proposals(
 
 
 def get_anchors(spatial_scale, anchor_sizes):
-    anchors = generate_anchors.generate_anchors(
+    return generate_anchors.generate_anchors(
         stride=1.0 / spatial_scale,
         sizes=anchor_sizes,
         aspect_ratios=cfg.RPN.ASPECT_RATIOS,
     ).astype(np.float32)
-    return anchors
 
 
 def reset_blob_names(blobs):
@@ -286,7 +284,7 @@ def convert_net(args, net, blobs):
                 break
         else:
             raise KeyError('No attribute "scale" in UpsampleNearest op')
-        resize_nearest_op = core.CreateOperator(
+        return core.CreateOperator(
             "ResizeNearest",
             list(op.input),
             list(op.output),
@@ -294,7 +292,6 @@ def convert_net(args, net, blobs):
             width_scale=float(scale),
             height_scale=float(scale),
         )
-        return resize_nearest_op
 
     @op_filter()
     def convert_rpn_rois(op):
@@ -458,11 +455,7 @@ def _get_result_blobs(check_blobs):
     ret = {}
     for x in check_blobs:
         sn = core.ScopedName(x)
-        if workspace.HasBlob(sn):
-            ret[x] = workspace.FetchBlob(sn)
-        else:
-            ret[x] = None
-
+        ret[x] = workspace.FetchBlob(sn) if workspace.HasBlob(sn) else None
     return ret
 
 
@@ -534,12 +527,12 @@ def _prepare_blobs(im, pixel_means, target_size, max_size):
     # Reuse code in blob_utils and fit FPN
     blob = blob_utils.im_list_to_blob([im])
 
-    blobs = {}
-    blobs["data"] = blob
-    blobs["im_info"] = np.array(
-        [[blob.shape[2], blob.shape[3], im_scale]], dtype=np.float32
-    )
-    return blobs
+    return {
+        "data": blob,
+        "im_info": np.array(
+            [[blob.shape[2], blob.shape[3], im_scale]], dtype=np.float32
+        ),
+    }
 
 
 def run_model_pb(args, net, init_net, im, check_blobs):
@@ -584,9 +577,7 @@ def run_model_pb(args, net, init_net, im, check_blobs):
     workspace.FeedBlob("result_boxes", boxes)
     workspace.FeedBlob("result_classids", classids)
 
-    ret = _get_result_blobs(check_blobs)
-
-    return ret
+    return _get_result_blobs(check_blobs)
 
 
 def verify_model(args, model_pb, test_img_file):

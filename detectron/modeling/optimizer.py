@@ -80,7 +80,7 @@ def _add_allreduce_graph(model):
             gradients = [
                 model.param_to_grad[p] for p in all_params[i::params_per_gpu]
             ]
-            if len(gradients) > 0:
+            if gradients:
                 if cfg.USE_NCCL:
                     model.net.NCCLAllreduce(gradients, gradients)
                 else:

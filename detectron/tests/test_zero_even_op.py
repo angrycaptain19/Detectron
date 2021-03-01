@@ -34,16 +34,14 @@ class ZeroEvenOpTest(unittest.TestCase):
         op = core.CreateOperator('ZeroEven', ['X'], ['Y'])
         workspace.FeedBlob('X', X)
         workspace.RunOperatorOnce(op)
-        Y = workspace.FetchBlob('Y')
-        return Y
+        return workspace.FetchBlob('Y')
 
     def _run_zero_even_op_gpu(self, X):
         with core.DeviceScope(core.DeviceOption(caffe2_pb2.CUDA, 0)):
             op = core.CreateOperator('ZeroEven', ['X'], ['Y'])
             workspace.FeedBlob('X', X)
         workspace.RunOperatorOnce(op)
-        Y = workspace.FetchBlob('Y')
-        return Y
+        return workspace.FetchBlob('Y')
 
     def test_throws_on_non_1D_arrays(self):
         X = np.zeros((2, 2), dtype=np.float32)

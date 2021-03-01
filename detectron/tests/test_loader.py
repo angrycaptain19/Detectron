@@ -35,8 +35,7 @@ import detectron.utils.logging as logging_utils
 
 
 def get_roidb_blobs(roidb):
-    blobs = {}
-    blobs['data'] = np.stack([entry['data'] for entry in roidb])
+    blobs = {'data': np.stack([entry['data'] for entry in roidb])}
     return blobs, True
 
 
@@ -59,10 +58,7 @@ def get_net(data_loader, name):
 
 
 def get_roidb_sample_data(sample_data):
-    roidb = []
-    for _ in range(np.random.randint(4, 10)):
-        roidb.append({'data': sample_data})
-    return roidb
+    return [{'data': sample_data} for _ in range(np.random.randint(4, 10))]
 
 
 def create_loader_and_network(sample_data, name):
@@ -80,8 +76,7 @@ def run_net(net):
     name_scope = 'gpu_{}'.format(0)
     with core.NameScope(name_scope):
         with core.DeviceScope(gpu_dev):
-            data = workspace.FetchBlob(core.ScopedName('data'))
-            return data
+            return workspace.FetchBlob(core.ScopedName('data'))
 
 
 class TestRoIDataLoader(unittest.TestCase):

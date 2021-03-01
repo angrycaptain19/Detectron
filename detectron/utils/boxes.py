@@ -109,8 +109,7 @@ def filter_small_boxes(boxes, min_size):
     """Keep boxes with width and height both greater than min_size."""
     w = boxes[:, 2] - boxes[:, 0] + 1
     h = boxes[:, 3] - boxes[:, 1] + 1
-    keep = np.where((w > min_size) & (h > min_size))[0]
-    return keep
+    return np.where((w > min_size) & (h > min_size))[0]
 
 
 def clip_boxes_to_image(boxes, height, width):
@@ -219,9 +218,8 @@ def bbox_transform_inv(boxes, gt_boxes, weights=(1.0, 1.0, 1.0, 1.0)):
     targets_dw = ww * np.log(gt_widths / ex_widths)
     targets_dh = wh * np.log(gt_heights / ex_heights)
 
-    targets = np.vstack((targets_dx, targets_dy, targets_dw,
+    return np.vstack((targets_dx, targets_dy, targets_dw,
                          targets_dh)).transpose()
-    return targets
 
 
 def expand_boxes(boxes, scale):

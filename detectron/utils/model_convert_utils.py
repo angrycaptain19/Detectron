@@ -39,7 +39,7 @@ class OpFilter(object):
         self.cond = None
         self.reverse = False
 
-        assert all([x in self.__dict__ for x in kwargs])
+        assert all(x in self.__dict__ for x in kwargs)
         self.__dict__.update(kwargs)
 
     def check(self, op):
@@ -129,7 +129,7 @@ def update_mobile_engines(net):
     for op in net.op:
         if op.type == "Conv":
             op.engine = "NNPACK"
-        if op.type == "ConvTranspose":
+        elif op.type == "ConvTranspose":
             op.engine = "BLOCK"
 
 
@@ -142,11 +142,11 @@ def pairwise(iterable):
 
 
 def blob_uses(net, blob):
-    u = []
-    for i, op in enumerate(net.op):
-        if blob in op.input or blob in op.control_input:
-            u.append(i)
-    return u
+    return [
+        i
+        for i, op in enumerate(net.op)
+        if blob in op.input or blob in op.control_input
+    ]
 
 
 def fuse_first_affine(net, params, removed_tensors):
@@ -336,8 +336,7 @@ def get_ws_blobs(blob_names=None):
 
 
 def get_device_option_cpu():
-    device_option = core.DeviceOption(caffe2_pb2.CPU)
-    return device_option
+    return core.DeviceOption(caffe2_pb2.CPU)
 
 
 def get_device_option_cuda(gpu_id=0):

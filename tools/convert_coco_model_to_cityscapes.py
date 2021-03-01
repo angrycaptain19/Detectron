@@ -58,13 +58,12 @@ def parse_args():
         parser.print_help()
         sys.exit(1)
 
-    args = parser.parse_args()
-    return args
+    return parser.parse_args()
 
 
 def convert_coco_blobs_to_cityscape_blobs(model_dict):
     for k, v in model_dict['blobs'].items():
-        if v.shape[0] == NUM_COCO_CLS or v.shape[0] == 4 * NUM_COCO_CLS:
+        if v.shape[0] in [NUM_COCO_CLS, 4 * NUM_COCO_CLS]:
             coco_blob = model_dict['blobs'][k]
             print(
                 'Converting COCO blob {} with shape {}'.
@@ -82,7 +81,7 @@ def convert_coco_blob_to_cityscapes_blob(coco_blob, convert_func):
     coco_shape = coco_blob.shape
     leading_factor = int(coco_shape[0] / NUM_COCO_CLS)
     tail_shape = list(coco_shape[1:])
-    assert leading_factor == 1 or leading_factor == 4
+    assert leading_factor in [1, 4]
 
     # Reshape in [num_classes, ...] form for easier manipulations
     coco_blob = coco_blob.reshape([NUM_COCO_CLS, -1] + tail_shape)

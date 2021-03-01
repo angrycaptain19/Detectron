@@ -38,8 +38,7 @@ def parse_rec(filename):
     tree = ET.parse(filename)
     objects = []
     for obj in tree.findall('object'):
-        obj_struct = {}
-        obj_struct['name'] = obj.find('name').text
+        obj_struct = {'name': obj.find('name').text}
         obj_struct['pose'] = obj.find('pose').text
         obj_struct['truncated'] = int(obj.find('truncated').text)
         obj_struct['difficult'] = int(obj.find('difficult').text)
@@ -61,11 +60,8 @@ def voc_ap(rec, prec, use_07_metric=False):
         # 11 point metric
         ap = 0.
         for t in np.arange(0., 1.1, 0.1):
-            if np.sum(rec >= t) == 0:
-                p = 0
-            else:
-                p = np.max(prec[rec >= t])
-            ap = ap + p / 11.
+            p = 0 if np.sum(rec >= t) == 0 else np.max(prec[rec >= t])
+            ap += p / 11.
     else:
         # correct AP calculation
         # first append sentinel values at the end
@@ -127,7 +123,10 @@ def voc_eval(detpath,
         lines = f.readlines()
     imagenames = [x.strip() for x in lines]
 
-    if not os.path.isfile(cachefile):
+    if os.path.isfile(cachefile):
+        recs = load_object(cachefile)
+
+    else:
         # load annots
         recs = {}
         for i, imagename in enumerate(imagenames):
@@ -139,9 +138,6 @@ def voc_eval(detpath,
         # save
         logger.info('Saving cached annotations to {:s}'.format(cachefile))
         save_object(recs, cachefile)
-    else:
-        recs = load_object(cachefile)
-
     # extract gt objects for this class
     class_recs = {}
     npos = 0
@@ -150,7 +146,7 @@ def voc_eval(detpath,
         bbox = np.array([x['bbox'] for x in R])
         difficult = np.array([x['difficult'] for x in R]).astype(np.bool)
         det = [False] * len(R)
-        npos = npos + sum(~difficult)
+        npos += sum(~difficult)
         class_recs[imagename] = {'bbox': bbox,
                                  'difficult': difficult,
                                  'det': det}
@@ -202,11 +198,11 @@ def voc_eval(detpath,
 
         if ovmax > ovthresh:
             if not R['difficult'][jmax]:
-                if not R['det'][jmax]:
+                if R['det'][jmax]:
+                    fp[d] = 1.
+                else:
                     tp[d] = 1.
                     R['det'][jmax] = 1
-                else:
-                    fp[d] = 1.
         else:
             fp[d] = 1.
 

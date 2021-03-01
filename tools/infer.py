@@ -135,10 +135,7 @@ def main(args):
         cfg.immutable(False)
         merge_cfg_from_cfg(cfg_orig)
         merge_cfg_from_file(yml)
-        if len(pkl) > 0:
-            weights_file = pkl
-        else:
-            weights_file = cfg.TEST.WEIGHTS
+        weights_file = pkl if len(pkl) > 0 else cfg.TEST.WEIGHTS
         cfg.NUM_GPUS = 1
         assert_and_infer_cfg(cache_urls=False)
         model = model_engine.initialize_model_from_cfg(weights_file)

@@ -508,13 +508,11 @@ def im_detect_mask_scale(
 ):
     """Computes masks at the given scale."""
     if hflip:
-        masks_scl = im_detect_mask_hflip(
+        return im_detect_mask_hflip(
             model, im, target_scale, target_max_size, boxes
         )
-    else:
-        im_scale = im_conv_body_only(model, im, target_scale, target_max_size)
-        masks_scl = im_detect_mask(model, im_scale, boxes)
-    return masks_scl
+    im_scale = im_conv_body_only(model, im, target_scale, target_max_size)
+    return im_detect_mask(model, im_scale, boxes)
 
 
 def im_detect_mask_aspect_ratio(model, im, aspect_ratio, boxes, hflip=False):
@@ -525,16 +523,13 @@ def im_detect_mask_aspect_ratio(model, im, aspect_ratio, boxes, hflip=False):
     boxes_ar = box_utils.aspect_ratio(boxes, aspect_ratio)
 
     if hflip:
-        masks_ar = im_detect_mask_hflip(
+        return im_detect_mask_hflip(
             model, im_ar, cfg.TEST.SCALE, cfg.TEST.MAX_SIZE, boxes_ar
         )
-    else:
-        im_scale = im_conv_body_only(
-            model, im_ar, cfg.TEST.SCALE, cfg.TEST.MAX_SIZE
-        )
-        masks_ar = im_detect_mask(model, im_scale, boxes_ar)
-
-    return masks_ar
+    im_scale = im_conv_body_only(
+        model, im_ar, cfg.TEST.SCALE, cfg.TEST.MAX_SIZE
+    )
+    return im_detect_mask(model, im_scale, boxes_ar)
 
 
 def im_detect_keypoints(model, im_scale, boxes):
@@ -687,13 +682,11 @@ def im_detect_keypoints_scale(
 ):
     """Computes keypoint predictions at the given scale."""
     if hflip:
-        heatmaps_scl = im_detect_keypoints_hflip(
+        return im_detect_keypoints_hflip(
             model, im, target_scale, target_max_size, boxes
         )
-    else:
-        im_scale = im_conv_body_only(model, im, target_scale, target_max_size)
-        heatmaps_scl = im_detect_keypoints(model, im_scale, boxes)
-    return heatmaps_scl
+    im_scale = im_conv_body_only(model, im, target_scale, target_max_size)
+    return im_detect_keypoints(model, im_scale, boxes)
 
 
 def im_detect_keypoints_aspect_ratio(
@@ -706,16 +699,13 @@ def im_detect_keypoints_aspect_ratio(
     boxes_ar = box_utils.aspect_ratio(boxes, aspect_ratio)
 
     if hflip:
-        heatmaps_ar = im_detect_keypoints_hflip(
+        return im_detect_keypoints_hflip(
             model, im_ar, cfg.TEST.SCALE, cfg.TEST.MAX_SIZE, boxes_ar
         )
-    else:
-        im_scale = im_conv_body_only(
-            model, im_ar, cfg.TEST.SCALE, cfg.TEST.MAX_SIZE
-        )
-        heatmaps_ar = im_detect_keypoints(model, im_scale, boxes_ar)
-
-    return heatmaps_ar
+    im_scale = im_conv_body_only(
+        model, im_ar, cfg.TEST.SCALE, cfg.TEST.MAX_SIZE
+    )
+    return im_detect_keypoints(model, im_scale, boxes_ar)
 
 
 def combine_heatmaps_size_dep(hms_ts, ds_ts, us_ts, boxes, heur_f):

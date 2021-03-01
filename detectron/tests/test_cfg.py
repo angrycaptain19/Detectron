@@ -169,13 +169,13 @@ class TestCfg(unittest.TestCase):
                 _ = cfg.MODEL.DILATION  # noqa
 
     def test_renamed_key_from_list(self):
-        # You should see logger messages like:
-        #  "Key EXAMPLE.RENAMED.KEY was renamed to EXAMPLE.KEY;
-        #  please update your config"
-        opts = ['EXAMPLE.RENAMED.KEY', 'foobar']
         with self.assertRaises(AttributeError):
             _ = cfg.EXAMPLE.RENAMED.KEY  # noqa
         with self.assertRaises(KeyError):
+            # You should see logger messages like:
+            #  "Key EXAMPLE.RENAMED.KEY was renamed to EXAMPLE.KEY;
+            #  please update your config"
+            opts = ['EXAMPLE.RENAMED.KEY', 'foobar']
             core_config.merge_cfg_from_list(opts)
 
     def test_renamed_key_from_file(self):

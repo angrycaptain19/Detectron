@@ -188,5 +188,4 @@ def _get_file_md5sum(file_name):
 def _get_reference_md5sum(url):
     """By convention the md5 hash for url is stored in url + '.md5sum'."""
     url_md5sum = url + '.md5sum'
-    md5sum = urllib.request.urlopen(url_md5sum).read().strip()
-    return md5sum
+    return urllib.request.urlopen(url_md5sum).read().strip()

@@ -45,7 +45,7 @@ _WHITE = (255, 255, 255)
 
 
 def kp_connections(keypoints):
-    kp_lines = [
+    return [
         [keypoints.index('left_eye'), keypoints.index('right_eye')],
         [keypoints.index('left_eye'), keypoints.index('nose')],
         [keypoints.index('right_eye'), keypoints.index('nose')],
@@ -62,7 +62,6 @@ def kp_connections(keypoints):
         [keypoints.index('right_shoulder'), keypoints.index('left_shoulder')],
         [keypoints.index('right_hip'), keypoints.index('left_hip')],
     ]
-    return kp_lines
 
 
 def convert_from_cls_format(cls_boxes, cls_segms, cls_keyps):
@@ -70,10 +69,7 @@ def convert_from_cls_format(cls_boxes, cls_segms, cls_keyps):
     code.
     """
     box_list = [b for b in cls_boxes if len(b) > 0]
-    if len(box_list) > 0:
-        boxes = np.concatenate(box_list)
-    else:
-        boxes = None
+    boxes = np.concatenate(box_list) if box_list else None
     if cls_segms is not None:
         segms = [s for slist in cls_segms for s in slist]
     else:

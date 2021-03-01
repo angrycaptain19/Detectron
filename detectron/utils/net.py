@@ -197,10 +197,10 @@ def broadcast_parameters(model):
 
 def sum_multi_gpu_blob(blob_name):
     """Return the sum of a scalar blob held on multiple GPUs."""
-    val = 0
-    for i in range(cfg.NUM_GPUS):
-        val += float(workspace.FetchBlob('gpu_{}/{}'.format(i, blob_name)))
-    return val
+    return sum(
+        float(workspace.FetchBlob('gpu_{}/{}'.format(i, blob_name)))
+        for i in range(cfg.NUM_GPUS)
+    )
 
 
 def average_multi_gpu_blob(blob_name):
@@ -291,8 +291,7 @@ def get_group_gn(dim):
 
     if dim_per_gp > 0:
         assert dim % dim_per_gp == 0
-        group_gn = dim // dim_per_gp
+        return dim // dim_per_gp
     else:
         assert dim % num_groups == 0
-        group_gn = num_groups
-    return group_gn
+        return num_groups
